@@ -1,0 +1,3 @@
+[target]\nt/target
+[tests]\n!tests/*.hex
+*.hex.txt\n!tests/*.bak
