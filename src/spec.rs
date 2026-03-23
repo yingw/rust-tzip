@@ -24,8 +24,8 @@ pub const GENERAL_PURPOSE_FLAG: u16 = 0x0002;
 /// ZIP version needed to extract (2.0 = supports DEFLATE)
 pub const VERSION_NEEDED: u16 = 20;
 
-/// ZIP version made by (2.0 = standard)
-pub const VERSION_MADE_BY: u16 = 20;
+/// ZIP version made by (0 = MS-DOS compatibility, per original trrntzip)
+pub const VERSION_MADE_BY: u16 = 0;
 
 /// Compression method: DEFLATE
 pub const COMPRESSION_METHOD_DEFLATE: u16 = 8;

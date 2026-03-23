@@ -10,7 +10,7 @@ repository = "https://github.com/openclaw/tzip"
 readme = "README.md"
 
 [dependencies]
-flate2 = "1.0"
+flate2 = { version = "1.0", default-features = false, features = ["zlib"] }
 crc32fast = "1.4"
 thiserror = "1.0"
 
