@@ -1,0 +1,18 @@
+[package]
+name = "tzip"
+version = "0.1.0"
+edition = "2021"
+description = "Create, update, and validate TorrentZip-formatted ZIP files"
+license = "MIT OR Apache-2.0"
+keywords = ["zip", "torrentzip", "compression", "archive"]
+categories = ["compression", "filesystem"]
+repository = "https://github.com/openclaw/tzip"
+readme = "README.md"
+
+[dependencies]
+flate2 = "1.0"
+crc32fast = "1.4"
+thiserror = "1.0"
+
+[dev-dependencies]
+tempfile = "3.0"
