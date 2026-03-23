@@ -6,8 +6,8 @@
 ///
 /// DOS date format: bits 0-4 = day, 5-8 = month, 9-15 = year offset from 1980
 /// Dec 24, 1996 = day=24, month=12, year=16
-/// Binary: 0010001 01100 11000 = 0x8600
-pub const DOS_DATE: u16 = 0x8600;
+/// Binary: (16 << 9) | (12 << 5) | 24 = 0x2198 (8600 decimal)
+pub const DOS_DATE: u16 = 0x2198;
 
 /// Fixed DOS time for TorrentZip: 23:32:00 (11:32:00 PM)
 ///
@@ -304,8 +304,8 @@ mod tests {
         // Year offset from 1980 = 16
         // Month = 12
         // Day = 24
-        // Binary: (16 << 9) | (12 << 5) | 24 = 0x8600
-        assert_eq!(DOS_DATE, 0x8600);
+        // Binary: (16 << 9) | (12 << 5) | 24 = 0x2198
+        assert_eq!(DOS_DATE, 0x2198);
     }
 
     #[test]
