@@ -8,6 +8,7 @@ keywords = ["zip", "torrentzip", "compression", "archive"]
 categories = ["compression", "filesystem"]
 repository = "https://github.com/jjolly/rust-tzip"
 readme = "README.md"
+documentation = "https://docs.rs/tzip"
 
 [dependencies]
 flate2 = { version = "1.0", default-features = false, features = ["zlib"] }
