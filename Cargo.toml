@@ -6,7 +6,7 @@ description = "Create, update, and validate TorrentZip-formatted ZIP files"
 license = "MIT OR Apache-2.0"
 keywords = ["zip", "torrentzip", "compression", "archive"]
 categories = ["compression", "filesystem"]
-repository = "https://github.com/openclaw/tzip"
+repository = "https://github.com/jjolly/rust-tzip"
 readme = "README.md"
 
 [dependencies]
