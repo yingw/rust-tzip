@@ -1,3 +1,4 @@
-target/
-tests/22vp931_orig.zip
-tests/at-6-1_a.bin
+/target
+/Cargo.lock
+**/*.rs.bk
+*.pdb
