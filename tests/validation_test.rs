@@ -253,6 +253,62 @@ fn test_validate_empty_file() {
 }
 
 // ============================================================================
+// PATH NORMALIZATION TESTS
+// ============================================================================
+
+#[test]
+fn test_path_normalization_backslashes() {
+    // Backslashes should be normalized to forward slashes
+    // This ensures ZIP spec compliance regardless of input path format
+    let mut buffer1 = Vec::new();
+    {
+        let mut tz = TorrentZipWriter::new(&mut buffer1);
+        tz.add_file("subdir\\file.bin", b"data").expect("Failed to add file");
+        tz.add_file("nested\\deep\\file.bin", b"data2").expect("Failed to add file");
+        tz.finish().expect("Failed to finish");
+    }
+
+    let mut buffer2 = Vec::new();
+    {
+        let mut tz = TorrentZipWriter::new(&mut buffer2);
+        tz.add_file("subdir/file.bin", b"data").expect("Failed to add file");
+        tz.add_file("nested/deep/file.bin", b"data2").expect("Failed to add file");
+        tz.finish().expect("Failed to finish");
+    }
+
+    // Both should produce identical output (backslashes normalized to forward slashes)
+    assert_eq!(buffer1, buffer2, "Backslashes should be normalized to forward slashes");
+
+    // Validate the result - files should have forward slashes
+    let result = TorrentZipValidator::validate(&buffer1[..]).expect("Validation failed");
+    assert!(result.is_valid, "Should be valid TorrentZip");
+    // Files are sorted by lowercase name
+    assert_eq!(result.files, vec!["nested/deep/file.bin", "subdir/file.bin"]);
+}
+
+#[test]
+fn test_path_normalization_deterministic() {
+    // Path normalization should not affect determinism
+    let file_data = b"Test content for path normalization";
+
+    let mut buffer1 = Vec::new();
+    {
+        let mut tz = TorrentZipWriter::new(&mut buffer1);
+        tz.add_file("path\\to\\file.txt", file_data).expect("Failed to add file");
+        tz.finish().expect("Failed to finish");
+    }
+
+    let mut buffer2 = Vec::new();
+    {
+        let mut tz = TorrentZipWriter::new(&mut buffer2);
+        tz.add_file("path/to/file.txt", file_data).expect("Failed to add file");
+        tz.finish().expect("Failed to finish");
+    }
+
+    assert_eq!(buffer1, buffer2, "Normalized paths should produce identical output");
+}
+
+// ============================================================================
 // DETERMINISM TESTS
 // ============================================================================
 

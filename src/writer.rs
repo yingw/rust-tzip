@@ -56,10 +56,17 @@ impl<W: Write> TorrentZipWriter<W> {
     }
 
     /// Add a file to the archive.
+    ///
+    /// Note: Path separators are automatically normalized to forward slashes
+    /// per the ZIP specification and TorrentZip requirements.
     pub fn add_file(&mut self, name: &str, data: &[u8]) -> Result<()> {
         if self.finished {
             return Err(Error::AlreadyFinished);
         }
+
+        // Normalize path separators to forward slashes (ZIP spec requirement)
+        // This ensures TorrentZip compatibility regardless of input source
+        let normalized_name = name.replace('\\', "/");
 
         // Compute CRC32 of uncompressed data
         let crc32 = if data.is_empty() {
@@ -80,8 +87,8 @@ impl<W: Write> TorrentZipWriter<W> {
         };
 
         let entry = FileEntry {
-            name: name.to_string(),
-            name_lower: name.to_lowercase(),
+            name: normalized_name.clone(),
+            name_lower: normalized_name.to_lowercase(),
             data: data.to_vec(),
             crc32,
             compressed,
