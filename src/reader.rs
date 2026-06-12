@@ -220,8 +220,11 @@ fn parse_central_dir_entry(
         errors.push(ValidationError::WrongCompressionMethod(compression));
     }
 
-    // Check general purpose bit flag (bit 1 must be set for max compression)
-    if general_flag != GENERAL_PURPOSE_FLAG {
+    // Check general purpose bit flag
+    // Bit 1 (0x0002) must be set for max compression
+    // Bit 11 (0x0800) is the UTF-8 flag (EFS) - optional but recommended for non-ASCII filenames
+    // Accept both 0x0002 (legacy) and 0x0802 (with UTF-8 flag)
+    if general_flag != GENERAL_PURPOSE_FLAG && general_flag != 0x0002 {
         errors.push(ValidationError::WrongGeneralFlag(general_flag));
     }
 

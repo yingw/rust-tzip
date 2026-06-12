@@ -19,7 +19,9 @@ pub const DOS_TIME: u16 = 0xBC00;
 /// General purpose bit flag for TorrentZip.
 ///
 /// Bit 1 (0x0002): Maximum compression flag - set for DEFLATE level 9
-pub const GENERAL_PURPOSE_FLAG: u16 = 0x0002;
+/// Bit 11 (0x0800): Language encoding flag (EFS) - indicates UTF-8 filenames
+/// Without bit 11, ZIP readers default to CP437, garbling non-ASCII filenames.
+pub const GENERAL_PURPOSE_FLAG: u16 = 0x0802;
 
 /// ZIP version needed to extract (2.0 = supports DEFLATE)
 pub const VERSION_NEEDED: u16 = 20;
