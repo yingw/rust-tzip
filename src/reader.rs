@@ -3,7 +3,7 @@
 use crate::error::{Error, Result, ValidationError};
 use crate::spec::{
     CENTRAL_DIR_HEADER_SIG, COMPRESSION_METHOD_DEFLATE, DOS_DATE, DOS_TIME,
-    END_OF_CENTRAL_DIR_SIG, GENERAL_PURPOSE_FLAG,
+    END_OF_CENTRAL_DIR_SIG, GENERAL_PURPOSE_FLAG, UTF8_FLAG,
 };
 use crc32fast::Hasher;
 
@@ -222,9 +222,9 @@ fn parse_central_dir_entry(
 
     // Check general purpose bit flag
     // Bit 1 (0x0002) must be set for max compression
-    // Bit 11 (0x0800) is the UTF-8 flag (EFS) - optional but recommended for non-ASCII filenames
-    // Accept both 0x0002 (legacy) and 0x0802 (with UTF-8 flag)
-    if general_flag != GENERAL_PURPOSE_FLAG && general_flag != 0x0002 {
+    // Bit 11 (0x0800) is the UTF-8 flag (EFS) - set conditionally for non-ASCII filenames
+    // Accept both 0x0002 (ASCII filenames) and 0x0802 (non-ASCII filenames)
+    if general_flag != GENERAL_PURPOSE_FLAG && general_flag != GENERAL_PURPOSE_FLAG | UTF8_FLAG {
         errors.push(ValidationError::WrongGeneralFlag(general_flag));
     }
 

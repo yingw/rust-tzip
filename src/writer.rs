@@ -7,7 +7,7 @@ use flate2::Compression;
 
 use crate::crc::compute_central_directory_crc32;
 use crate::error::{Error, Result};
-use crate::spec::{make_torrentzip_comment, CentralDirHeader, EndOfCentralDir, LocalFileHeader};
+use crate::spec::{make_torrentzip_comment, CentralDirHeader, EndOfCentralDir, LocalFileHeader, GENERAL_PURPOSE_FLAG, UTF8_FLAG};
 
 /// Internal representation of a file entry being written.
 struct FileEntry {
@@ -16,6 +16,8 @@ struct FileEntry {
     data: Vec<u8>,
     crc32: u32,
     compressed: Vec<u8>,
+    /// 文件名是否包含非 ASCII 字节；决定是否设 bit 11 (UTF-8 flag)
+    utf8_needed: bool,
 }
 
 /// TorrentZip-compliant ZIP file writer.
@@ -68,6 +70,11 @@ impl<W: Write> TorrentZipWriter<W> {
         // This ensures TorrentZip compatibility regardless of input source
         let normalized_name = name.replace('\\', "/");
 
+        // 判断文件名是否包含非 ASCII 字节
+        // ASCII 文件名不设 bit 11，保持与标准 TorrentZip 工具字节一致
+        // 非 ASCII 文件名设 bit 11，避免 CP437 解码乱码
+        let utf8_needed = normalized_name.bytes().any(|b| b > 0x7F);
+
         // Compute CRC32 of uncompressed data
         let crc32 = if data.is_empty() {
             0
@@ -92,6 +99,7 @@ impl<W: Write> TorrentZipWriter<W> {
             data: data.to_vec(),
             crc32,
             compressed,
+            utf8_needed,
         };
 
         self.entries.push(entry);
@@ -121,6 +129,13 @@ impl<W: Write> TorrentZipWriter<W> {
             // Write local file header
             let header = LocalFileHeader::new_torrentzip(entry.name.len() as u16);
             let mut header_bytes = header.to_bytes().to_vec();
+
+            // 文件名含非 ASCII 字符时才设 bit 11 (UTF-8 flag)
+            // ASCII 文件名保持 0x0002，与标准 TorrentZip 工具字节一致
+            if entry.utf8_needed {
+                let flag = GENERAL_PURPOSE_FLAG | UTF8_FLAG;
+                header_bytes[6..8].copy_from_slice(&flag.to_le_bytes());
+            }
 
             // Update with actual values
             let uncompressed_size = entry.data.len() as u32;
@@ -158,7 +173,12 @@ impl<W: Write> TorrentZipWriter<W> {
             let header = CentralDirHeader::new_torrentzip(name.len() as u16, *local_offset)
                 .with_sizes(entry.crc32, compressed_size, uncompressed_size);
 
-            buffer.extend_from_slice(&header.to_bytes());
+            let mut cd_header_bytes = header.to_bytes().to_vec();
+            if entry.utf8_needed {
+                let flag = GENERAL_PURPOSE_FLAG | UTF8_FLAG;
+                cd_header_bytes[8..10].copy_from_slice(&flag.to_le_bytes());
+            }
+            buffer.extend_from_slice(&cd_header_bytes);
             buffer.extend_from_slice(name.as_bytes());
         }
 
